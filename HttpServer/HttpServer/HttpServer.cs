@@ -87,7 +87,7 @@ namespace HttpServer
                         {
                             HttpListenerContext localContext = httpListenerContext as HttpListenerContext;
                             if (localContext == null)
-                                throw new ArgumentException($"{httpListenerContext} is not an instance of HttpListenerContext!");
+                                throw new ArgumentException($"{httpListenerContext} is not a reference to an HttpListenerContext object!");
 
                             string fileName = Path.GetFileName(localContext.Request.RawUrl);
                             string fileExtension = Path.GetExtension(fileName);
@@ -109,7 +109,7 @@ namespace HttpServer
                             }
 
                             // Nalazimo putanju do naseg fajla (trazeci u root dir-u i svim njegovim subdir-ovima)
-                            // !!! Ovo moze da bude bottleneck za 'veliki' root direktorijum
+                            // !!! Ovo moze da bude bottleneck
                             string filePath = Directory.GetFiles(rootDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
 
                             // Ukoliko trazeni fajl nije nadjen, saljemo nazad NotFound
@@ -136,7 +136,6 @@ namespace HttpServer
                         }
                         catch (Exception ex)
                         {
-
                             if (context.Response.OutputStream.CanWrite)
                             {
                                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

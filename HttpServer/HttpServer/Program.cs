@@ -17,17 +17,14 @@ namespace HttpServer
 
         static void Main(string[] args)
         {
-
             Thread serverThread = new Thread(() =>
             {
                 HttpServer server = new HttpServer(localhost, serverPort, directory);
                 server.Launch();
             });
+            serverThread.Priority = ThreadPriority.Highest;
 
             serverThread.Start();
-
-            Console.WriteLine("Press ^C key combination to kill the server instance.");
-
         }
     }
 }

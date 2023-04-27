@@ -41,5 +41,30 @@ namespace HttpServer
             }
         }
 
+        public bool? Remove(K key)
+        {
+            bool keyRemoved = false;
+            cacheLock.EnterUpgradeableReadLock();
+            try
+            {
+                if (!cache.ContainsKey(key))
+                    return null;
+                cacheLock.EnterWriteLock();
+                try
+                {
+                    keyRemoved = cache.Remove(key);
+                }
+                finally
+                {
+                    cacheLock.ExitWriteLock();
+                }
+            }
+            finally
+            {
+                cacheLock.ExitUpgradeableReadLock();
+            }
+            return keyRemoved;
+        }
+
     }
 }
