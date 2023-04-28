@@ -24,7 +24,7 @@ namespace HttpServer
             {
                 HttpServer server = new HttpServer(localhost, serverPort, directory, new ReaderWriterCache<string, byte[]>());
                 //HttpServer server = new HttpServer(localhost, serverPort, directory, new SimpleLockCache<string, byte[]>());
-                server.LaunchListeners();
+                server.Launch();
             });
             //serverThread.Priority = ThreadPriority.Highest;
 

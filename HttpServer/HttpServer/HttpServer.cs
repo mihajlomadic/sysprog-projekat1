@@ -51,6 +51,7 @@ namespace HttpServer
             context.Response.ContentType = contentType;
             context.Response.StatusCode = (int)statusCode;
             context.Response.ContentLength64 = responseBody.Length;
+            // Opcioni chunking u slucaju velikih fajlova
             //if (responseBody.Length >= 2e24)
             //    context.Response.SendChunked = true;
             // Saljemo response i radimo cleanup objekta outputStream
@@ -61,7 +62,7 @@ namespace HttpServer
             Console.WriteLine(logString);
         }
 
-        public void LaunchListeners()
+        public void Launch()
         {
             int port = (int)portNumber;
             for (int i = 0; i < Environment.ProcessorCount; ++i)
@@ -69,14 +70,14 @@ namespace HttpServer
                 Thread thListener = new Thread(() =>
                 {
                     Interlocked.Increment(ref port);
-                    Launch(port - 1);
+                    LaunchListener(port - 1);
                 });
                 //thListener.Priority = ThreadPriority.Highest;
                 thListener.Start();
             }
         }
 
-        private void Launch(int runOnPort)
+        private void LaunchListener(int runOnPort)
         {
 
             using (HttpListener httpListener = new HttpListener())
