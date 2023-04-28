@@ -17,13 +17,16 @@ namespace HttpServer
 
         static void Main(string[] args)
         {
+
+            Console.WriteLine();
+
             Thread serverThread = new Thread(() =>
             {
                 HttpServer server = new HttpServer(localhost, serverPort, directory, new ReaderWriterCache<string, byte[]>());
                 //HttpServer server = new HttpServer(localhost, serverPort, directory, new SimpleLockCache<string, byte[]>());
-                server.Launch();
+                server.LaunchListeners();
             });
-            serverThread.Priority = ThreadPriority.Highest;
+            //serverThread.Priority = ThreadPriority.Highest;
 
             serverThread.Start();
         }

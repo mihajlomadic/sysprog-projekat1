@@ -61,13 +61,28 @@ namespace HttpServer
             Console.WriteLine(logString);
         }
 
-        public void Launch()
+        public void LaunchListeners()
+        {
+            int port = (int)portNumber;
+            for (int i = 0; i < Environment.ProcessorCount; ++i)
+            {
+                Thread thListener = new Thread(() =>
+                {
+                    Interlocked.Increment(ref port);
+                    Launch(port - 1);
+                });
+                //thListener.Priority = ThreadPriority.Highest;
+                thListener.Start();
+            }
+        }
+
+        private void Launch(int runOnPort)
         {
 
             using (HttpListener httpListener = new HttpListener())
             {
                 // HttpListener objektu postavljamo base url adresu na kojoj osluskuje zahteve
-                string baseUrl = $"http://{serverAddress}:{portNumber}/";
+                string baseUrl = $"http://{serverAddress}:{runOnPort}/";
                 httpListener.Prefixes.Add(baseUrl);
                 httpListener.Start();
                 Console.WriteLine($"Listener launched on {baseUrl}...\n");
