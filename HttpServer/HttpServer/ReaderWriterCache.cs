@@ -7,13 +7,14 @@ using System.Threading.Tasks;
 
 namespace HttpServer
 {
-    internal class ReaderWriterCache<K, T>
+    internal class ReaderWriterCache<K, T> : AbstractCache<K, T>
     {
 
-        private Dictionary<K, T> cache = new Dictionary<K, T>();
         private ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
 
-        public bool TryGetValue(K key, out T value)
+        public ReaderWriterCache() : base(new Dictionary<K, T>()) { }
+
+        public override bool TryGetValue(K key, out T value)
         {
             bool cacheHit = false;
             cacheLock.EnterReadLock();
@@ -28,31 +29,17 @@ namespace HttpServer
             return cacheHit;
         }
 
-        public void Add(K key, T value)
+        public override void Add(K key, T value)
         {
-            cacheLock.EnterWriteLock();
-            try
-            {
-                cache.Add(key, value);
-            }
-            finally
-            {
-                cacheLock.ExitWriteLock();
-            }
-        }
-
-        public bool? Remove(K key)
-        {
-            bool keyRemoved = false;
             cacheLock.EnterUpgradeableReadLock();
             try
             {
-                if (!cache.ContainsKey(key))
-                    return null;
+                if (cache.ContainsKey(key))
+                    return;
                 cacheLock.EnterWriteLock();
                 try
                 {
-                    keyRemoved = cache.Remove(key);
+                    cache.Add(key, value);
                 }
                 finally
                 {
@@ -63,7 +50,19 @@ namespace HttpServer
             {
                 cacheLock.ExitUpgradeableReadLock();
             }
-            return keyRemoved;
+        }
+
+        public override bool Remove(K key)
+        {
+            cacheLock.EnterWriteLock();
+            try
+            {
+                return cache.Remove(key);
+            }
+            finally
+            {
+                cacheLock.ExitWriteLock();
+            }
         }
 
     }

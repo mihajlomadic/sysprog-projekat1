@@ -12,13 +12,24 @@ namespace HttpServer
     internal class HttpServer
     {
 
-        #region Response body constants
-
         public static readonly byte[] badRequestBody = Encoding.ASCII.GetBytes("<h1>Bad request.</h1>");
         public static readonly byte[] forbiddenRequestBody = Encoding.ASCII.GetBytes("<h1>Forbidden.</h1>");
         public static readonly byte[] notFoundRequestBody = Encoding.ASCII.GetBytes("<h1>Not found.</h1>");
 
-        #endregion
+        private string serverAddress;
+        private uint portNumber;
+        private string rootDir;
+        private object _readFileLock = new();
+        private object _logFileLock = new();
+        private AbstractCache<string, byte[]> cache;
+
+        public HttpServer(string serverAddress, uint portNumber, string rootDir, AbstractCache<string, byte[]> cache = null)
+        {
+            this.serverAddress = serverAddress;
+            this.portNumber = portNumber;
+            this.rootDir = rootDir;
+            this.cache = cache ?? new ReaderWriterCache<string, byte[]>();
+        }
 
         private void SendResponse(HttpListenerContext context, byte[] responseBody, string contentType, HttpStatusCode statusCode = HttpStatusCode.OK)
         {
@@ -36,11 +47,12 @@ namespace HttpServer
                 contentType,
                 responseBody.Length
             );
-
             // Postavljamo parametre response-a i upisujemo podatke u body
             context.Response.ContentType = contentType;
             context.Response.StatusCode = (int)statusCode;
             context.Response.ContentLength64 = responseBody.Length;
+            //if (responseBody.Length >= 2e24)
+            //    context.Response.SendChunked = true;
             // Saljemo response i radimo cleanup objekta outputStream
             using (Stream outputStream = context.Response.OutputStream)
             {
@@ -49,28 +61,16 @@ namespace HttpServer
             Console.WriteLine(logString);
         }
 
-        private string serverAddress;
-        private uint portNumber;
-        private string rootDir;
-        private ReaderWriterCache<string, byte[]> cache = new ReaderWriterCache<string, byte[]>();
-
-        public HttpServer(string serverAddress, uint portNumber, string rootDir)
-        {
-            this.serverAddress = serverAddress;
-            this.portNumber = portNumber;
-            this.rootDir = rootDir;
-        }
-
         public void Launch()
         {
 
             using (HttpListener httpListener = new HttpListener())
             {
-                // Kreiranje HttpListener objekta, koji nam sluzi 
-                // za prihvatanje http zahteva
-                httpListener.Prefixes.Add($"http://{serverAddress}:{portNumber}/");
+                // HttpListener objektu postavljamo base url adresu na kojoj osluskuje zahteve
+                string baseUrl = $"http://{serverAddress}:{portNumber}/";
+                httpListener.Prefixes.Add(baseUrl);
                 httpListener.Start();
-                Console.WriteLine("Server has launched!\n");
+                Console.WriteLine($"Listener launched on {baseUrl}...\n");
 
                 while (httpListener.IsListening)
                 {
@@ -125,10 +125,13 @@ namespace HttpServer
                             // dati fajl vec zahtevan, odnosno da li se nalazi u cache-u
                             byte[] responseBody;
 
-                            if (!cache.TryGetValue(filePath, out responseBody))
+                            if (!cache.TryGetValue(fileName, out responseBody))
                             {
-                                responseBody = File.ReadAllBytes(filePath);
-                                cache.Add(filePath, responseBody);
+                                lock (_readFileLock)
+                                {
+                                    responseBody = File.ReadAllBytes(filePath);
+                                }
+                                cache.Add(fileName, responseBody);
                             }
 
                             // Saljemo nazad pribavljeni fajl
@@ -141,7 +144,10 @@ namespace HttpServer
                                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                                 context.Response.OutputStream.Close();
                             }
-                            Console.WriteLine($"Failure occurred: {ex.Message}");
+                            lock (_logFileLock)
+                            {
+                                File.AppendAllText(@"../../errorLog.txt", ex.Message + "\n");
+                            }
                         }
                     }, context);
                 }
