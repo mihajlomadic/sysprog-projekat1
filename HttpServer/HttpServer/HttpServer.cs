@@ -52,7 +52,7 @@ namespace HttpServer
         private string serverAddress;
         private uint portNumber;
         private string rootDir;
-        private Cache<string, byte[]> cache = new Cache<string, byte[]>();
+        private ReaderWriterCache<string, byte[]> cache = new ReaderWriterCache<string, byte[]>();
 
         public HttpServer(string serverAddress, uint portNumber, string rootDir)
         {

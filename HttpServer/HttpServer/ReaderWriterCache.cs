@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace HttpServer
 {
-    internal class Cache<K, T>
+    internal class ReaderWriterCache<K, T>
     {
 
         private Dictionary<K, T> cache = new Dictionary<K, T>();
