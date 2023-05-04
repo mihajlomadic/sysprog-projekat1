@@ -34,7 +34,7 @@ namespace HttpServer
         private void SendResponse(HttpListenerContext context, byte[] responseBody, string contentType, HttpStatusCode statusCode = HttpStatusCode.OK)
         {
             // Formiramo string koji ce biti logovan na konzoli
-            // i handle-ovanju zahteva
+            // pri handle-ovanju zahteva
             string logString = string.Format(
                 "REQUEST:\n{0} {1} HTTP/{2}\nHost: {3}\nUser-agent: {4}\n-------------------\nRESPONSE:\nStatus: {5}\nDate: {6}\nContent-Type: {7}\nContent-Length: {8}\n",
                 context.Request.HttpMethod,
