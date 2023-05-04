@@ -51,9 +51,6 @@ namespace HttpServer
             context.Response.ContentType = contentType;
             context.Response.StatusCode = (int)statusCode;
             context.Response.ContentLength64 = responseBody.Length;
-            // Opcioni chunking u slucaju velikih fajlova
-            //if (responseBody.Length >= 2e24)
-            //    context.Response.SendChunked = true;
             // Saljemo response i radimo cleanup objekta outputStream
             using (Stream outputStream = context.Response.OutputStream)
             {
@@ -109,8 +106,11 @@ namespace HttpServer
                             }
 
                             // Nalazimo putanju do naseg fajla (trazeci u root dir-u i svim njegovim subdir-ovima)
-                            // !!! Ovo moze da bude bottleneck
-                            string filePath = Directory.GetFiles(rootDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
+
+                            // !!! Koriscenje ugradjenje funkcije ovde moze da bude ogroman bottleneck
+                            //string filePath = Directory.GetFiles(rootDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
+
+                            string filePath = FileSystemUtil.SearchDirectoryForFile(rootDir, fileName);
 
                             // Ukoliko trazeni fajl nije nadjen, saljemo nazad NotFound
                             if (filePath == null)
