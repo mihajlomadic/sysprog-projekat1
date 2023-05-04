@@ -26,6 +26,7 @@ namespace HttpServer
                 //HttpServer server = new HttpServer(localhost, serverPort, directory, new SimpleLockCache<string, byte[]>());
                 server.Launch();
             });
+
             serverThread.Priority = ThreadPriority.Highest;
 
             serverThread.Start();
