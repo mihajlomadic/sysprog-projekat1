@@ -19,7 +19,6 @@ namespace HttpServer
         private string serverAddress;
         private uint portNumber;
         private string rootDir;
-        private object _readFileLock = new();
         private object _logFileLock = new();
         private AbstractCache<string, byte[]> cache;
 
@@ -98,8 +97,15 @@ namespace HttpServer
                                 return;
                             }
 
+                            // HttpMethod nije GET - Forbidden
+                            if (context.Request.HttpMethod != "GET")
+                            {
+                                SendResponse(context, forbiddenRequestBody, "text/html", HttpStatusCode.Forbidden);
+                                return;
+                            }
+
                             // Ukoliko trazeni dokument nije zahtevanog tipa, saljemo nazad Forbidden
-                            if (fileExtension != ".gif" && fileExtension != ".png")
+                            if (context.Request.HttpMethod != "GET" || fileExtension != ".gif" && fileExtension != ".png")
                             {
                                 SendResponse(context, forbiddenRequestBody, "text/html", HttpStatusCode.Forbidden);
                                 return;
@@ -127,10 +133,7 @@ namespace HttpServer
 
                             if (!cache.TryGetValue(fileName, out responseBody))
                             {
-                                lock (_readFileLock)
-                                {
-                                    responseBody = File.ReadAllBytes(filePath);
-                                }
+                                responseBody = File.ReadAllBytes(filePath);
                                 cache.Add(fileName, responseBody);
                             }
 
