@@ -27,7 +27,7 @@ namespace HttpServer
             this.serverAddress = serverAddress;
             this.portNumber = portNumber;
             this.rootDir = rootDir;
-            this.cache = cache ?? new ReaderWriterCache<string, byte[]>();
+            this.cache = cache ?? new ReaderWriterLRUCache<string, byte[]>();
         }
 
         private void SendResponse(HttpListenerContext context, byte[] responseBody, string contentType, HttpStatusCode statusCode = HttpStatusCode.OK)

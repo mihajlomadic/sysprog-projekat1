@@ -33,13 +33,5 @@ namespace HttpServer
                 cache.Add(key, value);
             }
         }
-
-        public override bool Remove(K key)
-        {
-            lock (_cacheLock)
-            {
-                return cache.Remove(key);
-            }
-        }
     }
 }

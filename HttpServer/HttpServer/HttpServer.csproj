@@ -48,7 +48,7 @@
   <ItemGroup>
     <Compile Include="AbstractCache.cs" />
     <Compile Include="FileSystemUtil.cs" />
-    <Compile Include="ReaderWriterCache.cs" />
+    <Compile Include="ReaderWriterLRUCache.cs" />
     <Compile Include="HttpServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

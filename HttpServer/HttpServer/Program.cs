@@ -22,7 +22,7 @@ namespace HttpServer
 
             Thread serverThread = new Thread(() =>
             {
-                HttpServer server = new HttpServer(localhost, serverPort, directory, new ReaderWriterCache<string, byte[]>());
+                HttpServer server = new HttpServer(localhost, serverPort, directory, new ReaderWriterLRUCache<string, byte[]>());
                 //HttpServer server = new HttpServer(localhost, serverPort, directory, new SimpleLockCache<string, byte[]>());
                 server.Launch();
             });

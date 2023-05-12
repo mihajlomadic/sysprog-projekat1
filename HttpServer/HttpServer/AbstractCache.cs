@@ -19,6 +19,5 @@ namespace HttpServer
 
         public abstract void Add(K key, T value);
 
-        public abstract bool Remove(K key);
     }
 }
